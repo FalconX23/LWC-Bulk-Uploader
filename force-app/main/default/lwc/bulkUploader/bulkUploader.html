@@ -1,0 +1,486 @@
+<!-- sldsValidatorIgnore -->
+<template>
+    <lightning-card title="Bulk Upload" icon-name="custom:custom14">
+        <div>
+            <lightning-spinner 
+                if:true={isLoading} 
+                alternative-text="Loading data..." 
+                variant="brand">
+            </lightning-spinner>
+        </div>
+
+        <div class="bulk-upload-form" if:false={bulkJobState}>
+            <div class="slds-var-m-around_medium">
+                <lightning-input 
+                    type="text" 
+                    placeholder="sObject_Name__c" 
+                    data-field="objectApiName" 
+                    label="Object API Name" 
+                    value={objectApiName} 
+                    onblur={handleInputBlur} 
+                    read-only={isObjectApiNameReadOnly}>
+                </lightning-input>
+            </div>
+
+            <div class="slds-var-m-around_medium">
+                <lightning-input 
+                    type="text" 
+                    placeholder="Id, External_Id_Field_Name__c" 
+                    data-field="externalIdFieldName" 
+                    label="External ID Field Name" 
+                    value={externalIdFieldName} 
+                    onblur={handleInputBlur} 
+                    read-only={isExternalIdFieldNameReadOnly}>
+                </lightning-input>
+            </div>
+
+            <div class="slds-var-m-around_medium">
+                <lightning-input 
+                    type="text" 
+                    placeholder="insert, update, upsert, delete, undelete" 
+                    data-field="operation" 
+                    label="Operation" 
+                    value={operation} 
+                    onblur={handleInputBlur} 
+                    read-only={isOperationReadOnly}>
+                </lightning-input>
+            </div>
+
+            <div class="slds-var-m-around_medium">
+                <lightning-input 
+                    type="text" 
+                    placeholder="e.g. Id,Name,OwnerId" 
+                    data-field="csvTemplateFields" 
+                    label="CSV Template Fields" 
+                    value={csvTemplateFields} 
+                    onblur={handleInputBlur} 
+                    read-only={isCsvTemplateFieldsReadOnly}>
+                </lightning-input>
+            </div>
+
+            <div class="slds-var-m-around_medium">
+                <lightning-input 
+                    type="file" 
+                    accept={acceptedFormats}
+                    label="Upload CSV file of records"
+                    onchange={handleFileChange}>
+                </lightning-input>
+            </div>
+
+            <lightning-button 
+                if:true={csvTemplateFields} 
+                label="Download CSV Template" 
+                title="Download CSV Template" 
+                class="slds-var-m-around_small"
+                onclick={generateCsvTemplate}>
+            </lightning-button>
+
+            <lightning-button
+                variant="brand" 
+                label="Upload CSV &amp; Process Bulk Upload" 
+                title="Upload CSV &amp; Process Bulk Upload" 
+                class="slds-var-m-around_small"
+                onclick={uploadFileAndProcessBulkUpload} 
+                disabled={disabledProcessBulkUploadButton}>
+            </lightning-button>
+
+            <div class="slds-var-p-around_medium">
+                <div class="slds-is-relative">
+                    <lightning-spinner 
+                        if:true={isDatatableProcessing} 
+                        alternative-text="Loading data..." 
+                        variant="brand">
+                    </lightning-spinner>
+                </div>
+            </div>
+        </div>
+
+        <div class="bulk-upload-status slds-box slds-theme_default" if:true={bulkJobState}>
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.id}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            id
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.id} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.apexProcessingTime}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            apexProcessingTime
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <span class="slds-form-element__static">
+                                {bulkJob.apexProcessingTime}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.apiActiveProcessingTime}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            apiActiveProcessingTime
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <span class="slds-form-element__static">
+                                {bulkJob.apiActiveProcessingTime}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.apiVersion}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            apiVersion
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <span class="slds-form-element__static">
+                                {bulkJob.apiVersion}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.assignmentRuleId}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            assignmentRuleId
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.assignmentRuleId} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.columnDelimiter}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            columnDelimiter
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.columnDelimiter} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.concurrencyMode}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            concurrencyMode
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.concurrencyMode} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.contentType}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            contentType
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.contentType} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.contentUrl}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            contentUrl
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.contentUrl} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.createdById}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            createdById
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.createdById} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.createdDate}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            createdDate
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.createdDate} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.externalIdFieldName}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            externalIdFieldName
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.externalIdFieldName} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.jobType}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            jobType
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.jobType} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.lineEnding}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            lineEnding
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.lineEnding} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.numberRecordsFailed}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            numberRecordsFailed
+                        </span>
+
+                        <span class="slds-form-element__static">
+                            {bulkJob.numberRecordsFailed}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.numberRecordsProcessed}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            numberRecordsProcessed
+                        </span>
+
+                        <span class="slds-form-element__static">
+                            {bulkJob.numberRecordsProcessed}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.object}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            object
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.object} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.operation}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            operation
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.operation} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.retries}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            retries
+                        </span>
+
+                        <span class="slds-form-element__static">
+                            {bulkJob.retries}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.state}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            state
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.state} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.systemModstamp}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            systemModstamp
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.systemModstamp} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.totalProcessingTime}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            totalProcessingTime
+                        </span>
+
+                        <span class="slds-form-element__static">
+                            {bulkJob.totalProcessingTime}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.errorCode}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            errorCode
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.errorCode} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-col slds-size_1-of-2" if:true={bulkJob.message}>
+                    <div class="slds-form-element slds-form-element_stacked">
+                        <span class="slds-form-element__label unset-max-width">
+                            message
+                        </span>
+
+                        <div class="slds-form-element__control">
+                            <lightning-formatted-text 
+                                value={bulkJob.message} 
+                                class="slds-form-element__static">
+                            </lightning-formatted-text>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slds-var-p-around_small slds-align_absolute-center">
+                <lightning-button
+                    variant="brand" 
+                    label="Refresh &amp; Check Bulk Upload State" 
+                    title="Refresh &amp; Check Bulk Upload State" 
+                    onclick={getBulkUploadState} 
+                    if:false={isBulkJobStateJobCompleted}>
+                </lightning-button>
+            </div>
+
+            <div class="slds-grid slds-wrap" if:true={isBulkJobStateJobCompleted}>
+                <div class="slds-size_3-of-3 slds-max-medium-size_3-of-3 slds-large-size_1-of-3 slds-var-p-around_small slds-align_absolute-center">
+                    <lightning-button
+                        variant="success" 
+                        label="Download CSV of Job Successful Record Results" 
+                        title="Download CSV of Job Successful Record Results" 
+                        onclick={getJobSuccessfulRecordResults}>
+                    </lightning-button>
+                </div>
+    
+                <div class="slds-size_3-of-3 slds-max-medium-size_3-of-3 slds-large-size_1-of-3 slds-var-p-around_small slds-align_absolute-center">
+                    <lightning-button
+                        variant="destructive" 
+                        label="Download CSV of Job Failed Record Results" 
+                        title="Download CSV of Job Failed Record Results" 
+                        onclick={getJobFailedRecordResults}>
+                    </lightning-button>
+                </div>
+
+                <div class="slds-size_3-of-3 slds-max-medium-size_3-of-3 slds-large-size_1-of-3 slds-var-p-around_small slds-align_absolute-center">
+                    <lightning-button
+                        variant="destructive-text" 
+                        label="Download CSV of Job Unprocessed Record Results" 
+                        title="Download CSV of Job Unprocessed Record Results" 
+                        onclick={getJobUnprocessedRecordResults}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </lightning-card>
+</template>

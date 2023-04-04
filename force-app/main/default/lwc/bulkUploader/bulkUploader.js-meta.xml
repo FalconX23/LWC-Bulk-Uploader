@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>56.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__RecordAction</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordAction">
+            <actionType>ScreenAction</actionType>
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default,lightning__AppPage">
+            <property label="Object API Name" name="objectApiNameRef" type="String" />
+            <property label="External ID Field API Name" name="externalIdFieldNameRef" type="String" default="Id" />
+            <property label="Operation" name="operationRef" type="String" datasource="insert,update,upsert,delete,undelete" default="insert" />
+            <property label="CSV Template Fields" name="csvTemplateFieldsRef" type="String" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,2 @@
+<apex:page contentType="application/json">{!$Api.Session_ID} {!$Api.Partner_Server_URL_200}
+</apex:page>

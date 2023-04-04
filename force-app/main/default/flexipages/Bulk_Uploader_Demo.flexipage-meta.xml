@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>csvTemplateFieldsRef</name>
+                    <value>FirstName,LastName,Email,AccountId</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>externalIdFieldNameRef</name>
+                    <value>Id</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiNameRef</name>
+                    <value>Contact</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>operationRef</name>
+                    <value>insert</value>
+                </componentInstanceProperties>
+                <componentName>bulkUploader</componentName>
+                <identifier>c_bulkUploader</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Bulk Uploader Demo</masterLabel>
+    <template>
+        <name>flexipage:defaultAppHomeTemplate</name>
+    </template>
+    <type>AppPage</type>
+</FlexiPage>

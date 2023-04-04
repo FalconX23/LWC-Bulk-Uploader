@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+	<types>
+		<members>CommonUtils</members>
+		<name>ApexClass</name>
+	</types>
+	<types>
+		<members>GenerateSessionIdForLWC</members>
+		<name>ApexPage</name>
+	</types>
+	<types>
+		<members>AP16</members>
+		<members>API_Bluetail_Salesforce</members>
+		<members>Notification_Service_SF_Proxy</members>
+		<members>Preprod_Bluetail_Salesforce</members>
+		<members>Salesforce</members>
+		<members>Staging_Bluetail_Salesforce</members>
+		<members>Static_Lightning_Force</members>
+		<name>CspTrustedSite</name>
+	</types>
+	<types>
+		<members>Bulk_Uploader_Demo</members>
+		<name>FlexiPage</name>
+	</types>
+	<types>
+		<members>*</members>
+		<name>LightningComponentBundle</name>
+	</types>
+	<version>56.0</version>
+</Package>
